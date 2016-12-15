@@ -6,3 +6,5 @@ __pycache__/
 # vi swp files
 *.swp
 
+# Makefile
+Makefile
