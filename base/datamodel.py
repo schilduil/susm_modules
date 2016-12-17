@@ -20,8 +20,8 @@ def definitions(db, scope):
     class Individual(db.Entity):
         id = PrimaryKey(int, auto=True)
         code = Required(unicode, unique=True)
-        sex = Optional(int)
-        status = Optional(int)
+        sex = Optional(int, size=8, unsigned=True)
+        status = Optional(int, size=8, unsigned=True)
         parents = Set('Individual', reverse='offspring')
         offspring = Set('Individual', reverse='parents')
 
