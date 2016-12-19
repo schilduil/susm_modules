@@ -30,7 +30,6 @@ def definitions(db, scope):
         setattr(entity, name, attr)
 
     # New entity for location.
-    
     class Location(db.Entity):
         id = PrimaryKey(int, auto=True)
         name = Required(unicode)
