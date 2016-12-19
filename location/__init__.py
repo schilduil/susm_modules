@@ -25,7 +25,7 @@ def definitions(db, scope):
     for (entity, name, attr) in new_columns:
         attr._init_(entity, name)
         entity._attrs_.append(attr)
-        entity._new_attrs_.append(attr) 
+        entity._new_attrs_.append(attr)
         entity._adict_[name] = attr
         setattr(entity, name, attr)
 

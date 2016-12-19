@@ -39,7 +39,7 @@ if __name__ == "__main__":
     definitions(db, globals())
 
     class ClosedRing(db.Entity):
-        wearers = Set('Individual', reverse = 'closed_ring')
+        wearers = Set('Individual', reverse='closed_ring')
         issuer = Required(unicode, 3)
         breeder = Required(unicode)
         year = Required(int)
@@ -47,11 +47,10 @@ if __name__ == "__main__":
         sequence_number = Required(int)
         PrimaryKey(issuer, breeder, year, size, sequence_number)
 
-    Individual.closed_ring = Optional(ClosedRing, reverse = 'wearers')
+    Individual.closed_ring = Optional(ClosedRing, reverse='wearers')
 
     db.bind("sqlite", ":memory:")
-    db.generate_mapping(create_tables = True)
+    db.generate_mapping(create_tables=True)
 
     print(dir(Individual))
     print(dir(ClosedRing))
-
