@@ -43,3 +43,10 @@ def definitions(db, scope):
 
     # Returning the entities.
     return {'Location': Location}
+
+
+def ui_definitions(db, scope)
+    """
+    UI ORM objects - TODO
+    """
+    return {}

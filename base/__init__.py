@@ -32,6 +32,13 @@ def definitions(db, scope):
     return {'Individual': Individual}
 
 
+def ui_definitions(db, scope):
+    """
+    UI ORM definitions - TODO
+    """
+    return {}
+
+
 if __name__ == "__main__":
 
     db = pony.orm.Database()
