@@ -45,7 +45,7 @@ def definitions(db, scope):
     return {'Location': Location}
 
 
-def ui_definitions(db, scope)
+def ui_definitions(db, scope):
     """
     UI ORM objects - TODO
     """

@@ -56,7 +56,7 @@ def ui_definitions(db, scope):
 
     class UiKinship(suapp.orm.UiOrmObject):
         """
-        The glue between the database and the UI.
+        Calculates and retrieves/saves kinships.
         """
 
         @staticmethod
@@ -170,5 +170,22 @@ def ui_definitions(db, scope):
     # Adjusting the module to remove 'datamodel'.
     UiKinship.__module__ = 'modlib.kinship'
 
+    class Kinship_UiIndividual(modlib.base.UiIndividual):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        @property
+        def ui_inbreeding(self):
+            kinship = modlib.kinship.UiKinship(first=self._ui_orm, second=self._ui_orm)
+            return (2.0 * kinship.kinship) - 1.0
+
+        @ui_inbreeding.setter
+        def ui_inbreeding(self, f):
+            kinship = modlib.kinship.UiKinship(first=self._ui_orm, second=self._ui_orm)
+            kinship.kinship = (1.0 + f)/2
+
+    # Adjusting the module.
+    Kinship_UiIndividual.__module__ = 'modlib.base'
+
     # Returning the entities.
-    return {'UiKinship': UiKinship}
+    return {'UiIndividual': Kinship_UiIndividual, 'UiKinship': UiKinship}
