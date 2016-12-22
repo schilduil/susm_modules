@@ -88,7 +88,7 @@ def ui_definitions(db, scope):
                 result = 0.0
                 for parent in parents:
                     # Best bet is that the parent is older.
-                    result += UiKinship(first=parent, second=first).kinship/2.0
+                    result += UiKinship(first=parent, second=first).kinship / 2.0
             return result
 
         @staticmethod
@@ -115,11 +115,11 @@ def ui_definitions(db, scope):
                 result = 0.0
                 for parent in parents:
                     # Best bet is that the parent is older.
-                    pc = UiKinship(first=parent, second=first).pc_kinship/2.0
+                    pc = UiKinship(first=parent, second=first).pc_kinship / 2.0
                     if pc is None:
                         # Falling back to the kinship if we don't have a pc_kinship.
                         # After all pc_kinship is optional.
-                        pc = UiKinship(first=parent, second=first).kinship/2.0
+                        pc = UiKinship(first=parent, second=first).kinship / 2.0
                     result += pc
             return result
 
@@ -218,7 +218,7 @@ def ui_definitions(db, scope):
         @ui_inbreeding.setter
         def ui_inbreeding(self, f):
             kinship = modlib.kinship.UiKinship(first=self._ui_orm, second=self._ui_orm)
-            kinship.kinship = (1.0 + f)/2
+            kinship.kinship = (1.0 + f) / 2.0
 
     # Adjusting the module.
     Kinship_UiIndividual.__module__ = 'modlib.base'
