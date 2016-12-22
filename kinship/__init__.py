@@ -37,6 +37,7 @@ def definitions(db, scope):
         first = Required(modlib.base.Individual, reverse='first_kinships')
         second = Required(modlib.base.Individual, reverse='second_kinships')
         kinship = Required(float)
+        pc_kinship = Optional(float)
         PrimaryKey(first, second)
 
     # Adjusting the module to remove 'datamodel'.
@@ -90,6 +91,38 @@ def ui_definitions(db, scope):
                     result += UiKinship(first=parent, second=first).kinship/2.0
             return result
 
+        @staticmethod
+        def _calculate_pc(first, second):
+            """
+            Calculates the kinship based on the kinship of parents.
+            """
+            # Anything with an unknown is considered 0.0
+            if first is None or second is None:
+                return 0.0
+            # If first isn't the oldest, switch.
+            if first.dob > second.dob:
+                first, second = second, first
+            # Get the parents of the youngest.
+            parents = second.parents.page(1, pagesize=2)
+            # If first == second, handle it.
+            if first == second:
+                # Kinship with itself:
+                # pc_kinship(a,a) = (1.0) / 2.0
+                result = (1.0 + 0.0) / 2.0
+            else:
+                # If they are different this is the formula:
+                # pc_kinship(a,b) = (pc_kinship(b, a.dad) + pc_kinship(b, a.mum)) / 2.0
+                result = 0.0
+                for parent in parents:
+                    # Best bet is that the parent is older.
+                    pc = UiKinship(first=parent, second=first).pc_kinship/2.0
+                    if pc is None:
+                        # Falling back to the kinship if we don't have a pc_kinship.
+                        # After all pc_kinship is optional.
+                        pc = UiKinship(first=parent, second=first).kinship/2.0
+                    result += pc
+            return result
+
         def __init__(self, first=None, second=None, orm=None):
             """
             Initializes the object by looking up or creating the database row.
@@ -97,47 +130,49 @@ def ui_definitions(db, scope):
             if orm:
                 # We're passing the orm object, ignoring the rest.
                 self._ui_orm = orm
-                return
-            # TODO: make a specific exception.
-            if first is None or second is None:
-                raise KeyError("Either orm or first & second must be specified.")
-            # The individuals should be the db orm object.
-            if isinstance(first, suapp.orm.UiOrmObject):
-                first = first._ui_orm
-            if isinstance(second, suapp.orm.UiOrmObject):
-                second = second._ui_orm
-            # Normally first should be the oldest, otherwise it is switched.
-            if first.dob > second.dob:
-                self._ui_switched = True
             else:
-                self._ui_switched = False
-            # Try to find it
-            try:
-                # Normally it should be in the database with first the oldest first.
-                if self._ui_switched:
-                    self._ui_orm = modlib.kinship.Kinship[second.id, first.id]
+                # TODO: make a specific exception.
+                if first is None or second is None:
+                    raise KeyError("Either orm or first & second must be specified.")
+                # The individuals should be the db orm object.
+                if isinstance(first, suapp.orm.UiOrmObject):
+                    first = first._ui_orm
+                if isinstance(second, suapp.orm.UiOrmObject):
+                    second = second._ui_orm
+                # Normally first should be the oldest, otherwise it is switched.
+                if first.dob > second.dob:
+                    self._ui_switched = True
                 else:
-                    self._ui_orm = modlib.kinship.Kinship[first.id, second.id]
-            except core.ObjectNotFound:
-                self._ui_switched = not self._ui_switched
+                    self._ui_switched = False
+                # Try to find it
                 try:
+                    # Normally it should be in the database with first the oldest first.
                     if self._ui_switched:
-                        self._ui_orm = modlib.kinship.Kinship[second, first]
+                        self._ui_orm = modlib.kinship.Kinship[second.id, first.id]
                     else:
-                        self._ui_orm = modlib.kinship.Kinship[first, second]
+                        self._ui_orm = modlib.kinship.Kinship[first.id, second.id]
                 except core.ObjectNotFound:
                     self._ui_switched = not self._ui_switched
-                    self.calculate_and_create(first, second)
+                    try:
+                        if self._ui_switched:
+                            self._ui_orm = modlib.kinship.Kinship[second, first]
+                        else:
+                            self._ui_orm = modlib.kinship.Kinship[first, second]
+                    except core.ObjectNotFound:
+                        self._ui_switched = not self._ui_switched
+                        self.calculate_and_create(first, second)
+            self.ui_init()
 
         def calculate_and_create(self, first, second):
             """
             Calculates the kinship and creates the database object.
             """
             kinship = self._calculate(first, second)
+            pc_kinship = self._calculate_pc(first, second)
             if self._ui_switched:
-                self._ui_orm = modlib.kinship.Kinship(first=second, second=first, kinship=kinship)
+                self._ui_orm = modlib.kinship.Kinship(first=second, second=first, kinship=kinship, pc_kinship=pc_kinship)
             else:
-                self._ui_orm = modlib.kinship.Kinship(first=first, second=second, kinship=kinship)
+                self._ui_orm = modlib.kinship.Kinship(first=first, second=second, kinship=kinship, pc_kinship=pc_kinship)
 
         def recalculate(self, timestamp=None):
             """
@@ -173,6 +208,7 @@ def ui_definitions(db, scope):
     class Kinship_UiIndividual(modlib.base.UiIndividual):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            self.ui_attributes.add('ui_inbreeding')
 
         @property
         def ui_inbreeding(self):

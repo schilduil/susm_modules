@@ -52,16 +52,14 @@ def ui_definitions(db, scope):
             if orm:
                 # We're passing the orm object, ignoring the rest.
                 self._ui_orm = orm
-                return
-            # TODO: make a specific exception.
-            if id:
+            elif id:
                 self._ui_orm = modlib.base.Individual[id]
-                return
-            if code:
+            elif code:
                 self._ui_orm = pony.orm.get(i for i in modlib.base.Individual if i.code == code)
-            # HOW TO CREATE A NEW ONE?
+            # EMPTY ONE: DON'T CREATE?
             if self._ui_orm is None:
                 print("Not found %s, %s, %s" % (id, code, orm))
+            self.ui_init()
 
     UiIndividual.__module__ = 'modlib.base'
 
