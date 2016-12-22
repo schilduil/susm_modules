@@ -49,4 +49,29 @@ def ui_definitions(db, scope):
     """
     UI ORM objects - TODO
     """
-    return {}
+
+    # So the other moduels are present.
+    globals().update(scope)
+
+    class UiLocation(suapp.orm.UiOrmObject):
+        """
+        Individual for the UI that links to the back.
+        """
+
+        def __init__(self, parent=None, name=None, orm=None):
+            """
+            Initializes the object by looking up or creating the database row.
+            """
+            if orm:
+                # We're passing the orm object, ignoring the rest.
+                self._ui_orm = orm
+            elif name and parent:
+                self._ui_orm = modlib.location.Location[parent, name]
+            # EMPTY ONE: DON'T CREATE?
+            if self._ui_orm is None:
+                print("Not found %s, %s, %s" % (id, code, orm))
+            self.ui_init()
+
+    UiLocation.__module__ = 'modlib.location'
+
+    return {'UiLocation': UiLocation}
