@@ -220,6 +220,7 @@ def ui_definitions(db, scope):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.ui_attributes.add('ui_inbreeding')
+            self.ui_attributes.add('ui_pc_inbreeding')
 
         @property
         def ui_inbreeding(self):
@@ -230,6 +231,16 @@ def ui_definitions(db, scope):
         def ui_inbreeding(self, f):
             kinship = modlib.kinship.UiKinship(first=self._ui_orm, second=self._ui_orm)
             kinship.kinship = (1.0 + f) / 2.0
+
+        @property
+        def ui_pc_inbreeding(self):
+            pc_kinship = 0.0
+            try:
+                parents = self._ui_orm.parents.page(1, pagesize=2)
+                pc_kinship = UiKinship(first=parents[0], second=parents[1]).pc_kinship
+            except:
+                pass
+            return pc_kinship
 
     # Adjusting the module.
     Kinship_UiIndividual.__module__ = 'modlib.base'
