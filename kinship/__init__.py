@@ -21,7 +21,7 @@ def definitions(db, scope):
     new_columns = [
         (modlib.base.Individual, 'first_kinships', Set('Kinship', reverse='first')),
         (modlib.base.Individual, 'second_kinships', Set('Kinship', reverse='second')),
-        (modlib.base.Individual, 'dob', Required(date))
+        (modlib.base.Individual, 'dob', Optional(date))
     ]
 
     # TODO: we might want this code in some module.
@@ -69,8 +69,12 @@ def ui_definitions(db, scope):
             if first is None or second is None:
                 return 0.0
             # If first isn't the oldest, switch.
-            if first.dob > second.dob:
-                first, second = second, first
+            try:
+                if first.dob > second.dob:
+                    first, second = second, first
+            except TypeError:
+                if first.id > second.id:
+                    first, second = second, first
             # Get the parents of the youngest.
             parents = second.parents.page(1, pagesize=2)
             # If first == second, handle it.
@@ -100,8 +104,12 @@ def ui_definitions(db, scope):
             if first is None or second is None:
                 return 0.0
             # If first isn't the oldest, switch.
-            if first.dob > second.dob:
-                first, second = second, first
+            try:
+                if first.dob > second.dob:
+                    first, second = second, first
+            except TypeError:
+                if first.id > second.id:
+                    first, second = second, first
             # Get the parents of the youngest.
             parents = second.parents.page(1, pagesize=2)
             # If first == second, handle it.
@@ -140,10 +148,13 @@ def ui_definitions(db, scope):
                 if isinstance(second, suapp.orm.UiOrmObject):
                     second = second._ui_orm
                 # Normally first should be the oldest, otherwise it is switched.
-                if first.dob > second.dob:
-                    self._ui_switched = True
-                else:
-                    self._ui_switched = False
+                self._ui_switched = False
+                try:
+                    if first.dob > second.dob:
+                        self._ui_switched = True
+                except TypeError:
+                    if first.id > second.id:
+                        self._ui_switched = True
                 # Try to find it
                 try:
                     # Normally it should be in the database with first the oldest first.
