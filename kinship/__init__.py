@@ -217,29 +217,54 @@ def ui_definitions(db, scope):
     UiKinship.__module__ = 'modlib.kinship'
 
     class Kinship_UiIndividual(modlib.base.UiIndividual):
+        METHOD_CLASSIC = 0
+        METHOD_PC = 1
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.ui_attributes.add('ui_inbreeding')
-            self.ui_attributes.add('ui_pc_inbreeding')
+            # HIDDEN: self.ui_attributes.add('_ui_pc_inbreeding')
+
+        def ui_which_kinship(self):
+            try:
+                # TODO: We should be able to override the config on the instance level.
+                #       The instance of the kinship object in this case.
+                if suapp.orm.UiOrmObject.config['modules']['kinship']['method'].lower() == 'pc':
+                    return Kinship_UiIndividual.METHOD_PC
+            except KeyError:
+                pass
+            return Kinship_UiIndividual.METHOD_CLASSIC
 
         @property
         def ui_inbreeding(self):
-            kinship = modlib.kinship.UiKinship(first=self._ui_orm, second=self._ui_orm)
-            return (2.0 * kinship.kinship) - 1.0
+            if self.ui_which_kinship == METHOD_PC:
+                return self._ui_pc_inbreeding
+            else:
+                return self._ui_inbreeding
 
         @ui_inbreeding.setter
         def ui_inbreeding(self, f):
+            self._ui_inbreeding = f
+
+        @property
+        def _ui_inbreeding(self):
+            kinship = modlib.kinship.UiKinship(first=self._ui_orm, second=self._ui_orm)
+            return (2.0 * kinship.kinship) - 1.0
+
+        @_ui_inbreeding.setter
+        def ui_inbreeding(self, f):
+            # TODO: raise an exception if this can be calculated from the parents.
             kinship = modlib.kinship.UiKinship(first=self._ui_orm, second=self._ui_orm)
             kinship.kinship = (1.0 + f) / 2.0
 
         @property
-        def ui_pc_inbreeding(self):
-            pc_kinship = 0.0
+        def _ui_pc_inbreeding(self):
             try:
                 parents = self._ui_orm.parents.page(1, pagesize=2)
-                pc_kinship = UiKinship(first=parents[0], second=parents[1]).pc_kinship
+                return UiKinship(first=parents[0], second=parents[1]).pc_kinship
             except:
-                pass
+                # Fall back to the kinship.
+                return self._ui_inbreeding()
             return pc_kinship
 
     # Adjusting the module.
