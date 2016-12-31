@@ -131,10 +131,14 @@ def ui_definitions(db, scope):
                     result += pc
             return result
 
-        def __init__(self, first=None, second=None, orm=None):
+        def __init__(self, first=None, second=None, orm=None, config=None):
             """
             Initializes the object by looking up or creating the database row.
             """
+            if config:
+                self._ui_config = config
+            else:
+                self._ui_config = suapp.orm.UiOrmObject.config
             if orm:
                 # We're passing the orm object, ignoring the rest.
                 self._ui_orm = orm
@@ -227,9 +231,7 @@ def ui_definitions(db, scope):
 
         def ui_which_kinship(self):
             try:
-                # TODO: We should be able to override the config on the instance level.
-                #       The instance of the kinship object in this case.
-                if suapp.orm.UiOrmObject.config['modules']['kinship']['method'].lower() == 'pc':
+                if self._ui_config['modules']['kinship']['method'].lower() == 'pc':
                     return Kinship_UiIndividual.METHOD_PC
             except KeyError:
                 pass

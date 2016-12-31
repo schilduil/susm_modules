@@ -58,10 +58,14 @@ def ui_definitions(db, scope):
         Individual for the UI that links to the back.
         """
 
-        def __init__(self, parent=None, name=None, orm=None):
+        def __init__(self, parent=None, name=None, orm=None, config=None):
             """
             Initializes the object by looking up or creating the database row.
             """
+            if config:
+                self._ui_config = config
+            else:
+                self._ui_config = suapp.orm.UiOrmObject.config
             if orm:
                 # We're passing the orm object, ignoring the rest.
                 self._ui_orm = orm
