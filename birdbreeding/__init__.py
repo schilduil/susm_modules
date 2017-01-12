@@ -30,6 +30,24 @@ STATUS = {
                                                             > 30 (WEANED) > 0 (DEAD)
                                                                           > 40 (MOULTING) > 0 (DEAD)
                                                                                           > 100 (ADULT PLUMAGE)
+
+    Transistions:
+        0 #
+        1 > 0,2,3,4
+        2 > 0,4
+        3 > 0,4,5,6,10
+        4 > 0
+        5 > 0
+        6 > 0
+    To:
+        0 < *
+        1 (+ = new)
+        2 < 1
+        3 < 1
+        4 < 1,2,3
+        5 < 2
+        6 < 2
+        10 < 2
                              
     --- < 50: not yet a budgie
     --- 50-100: a sick bird.
@@ -103,7 +121,7 @@ def view_definitions():
                         "elements": {
                             0: {
                                 'type': 'button',
-                                'value': "Add",
+                                'value': "+",
                                 'outmessage': "FINDPARENT"
                             }
                         }
@@ -116,35 +134,101 @@ def view_definitions():
                     "query": "%s.young_in_location" % (ref_name),
                     "elements": {
                         0: {
-                            'type': 'label',
-                            'condition': '.status == 1',
-                            'value': 'Egg'
+                            'type': 'button',
+                            'value': '.code'
                         },
                         1: {
                             'type': 'label',
-                            'condition': '.status == 2',
-                            'value': 'Inf.'
+                            'if': '.status == 1',
+                            'value': 'Egg'
                         },
                         2: {
                             'type': 'label',
-                            'condition': '.status == 3',
-                            'value': 'Fert.'
+                            'if': '.status == 2',
+                            'value': 'Inf.'
                         },
                         3: {
                             'type': 'label',
-                            'condition': '.status == 4',
-                            'value': 'Dam.'
+                            'if': '.status == 3',
+                            'value': 'Fert.'
                         },
                         4: {
                             'type': 'label',
-                            'condition': '.status == 5',
-                            'value': 'Bad'
+                            'if': '.status == 4',
+                            'value': 'Dam.'
                         },
                         5: {
                             'type': 'label',
-                            'condition': '.status == 6',
+                            'if': '.status == 5',
+                            'value': 'Bad'
+                        },
+                        6: {
+                            'type': 'label',
+                            'if': '.status == 6',
                             'value': 'DIS'
                         },
+                        7: {
+                            'type': 'label',
+                            'if': '6 < .status < 10',
+                            'value': 'Egg?'
+                        },
+                        8: {
+                            'type': 'label',
+                            'if': '10 <= .status < 20',
+                            'value': 'Pinkie'
+                        },
+                        9: {
+                            'type': 'label',
+                            'if': '20 <= .status < 30',
+                            'value': 'Fledgling'
+                        },
+                        10: {
+                            'type': 'label',
+                            'if': '30 <= .status',
+                            'value': 'Young'
+                        },
+                        21: {
+                            'type': 'button',
+                            'value': 'X'
+                        },
+                        22: {
+                            'type': 'button',
+                            'if': '.status == 1',
+                            'value': 'Inf'
+                        },
+                        23: {
+                            'type': 'button',
+                            'if': '.status == 1',
+                            'value': 'Fer'
+                        },
+                        24: {
+                            'type': 'button',
+                            'if': '.status in [1,2,3]',
+                            'value': 'Dam'
+                        },
+                        25: {
+                            'type': 'button',
+                            'if': '.status == 1',
+                            'value': 'Die'
+                        },
+                        26: {
+                            'type': 'button',
+                            'if': '.status == 1',
+                            'value': 'DIS'
+                        },
+                        27: {
+                            'type': 'button',
+                            'if': '.status == 1',
+                            'value': 'H'
+                        }
+                    },
+                    1: {
+                        'elements': {
+                            0:{
+                                'type': 'button',
+                                'value': "+"
+                            }
+                        }
                     }
                 }
             }
@@ -234,12 +318,12 @@ if __name__ == "__main__":
 
     test_queries = {
         'breedingmanagement.adults_in_location': ('result = [I(1,"GOc",1,100), I(2,"VAYF",2,100)]', {}),
-        'breedingmanagement.young_in_location': ('result = [I(3,"(GOVAYF)62",None,10), I(4,"(GOVAYF)67",None,1)]', {}),
+        'breedingmanagement.young_in_location': ('result = [%s]' % (",".join('I(%s,"(GOVAYF)%s",None,%s)' % (i+3, i+62, i) for i in [i for i in range(7)] + [(i+1)*10 for i in range(4)])), {}),
         'breedingmanagement.locations': ('result = [L(i+1) for i in range(limit)]', {})
     }
 
     limit = 3
-    width = 60
+    width = 70
     for name, definition in views.items():
         print("View %s" % (name))
         title = definition.get('name', name)
@@ -257,8 +341,9 @@ if __name__ == "__main__":
         else: # Loop over all integer keys and get out the titles.
             tab_titles = [tabs[i]['title'] for i in tabs.sorted() if isinstance(i, int)]
         tab_header = "|".join(tab_titles)
+        tab_line_header = "+".join("-" * len(title) for title in tab_titles)
         # TAB HEAD
-        print("\t+%s+" % ("-" * len(tab_header)))
+        print("\t+%s+" % tab_line_header)
         print("\t|%s|" % tab_header)
         print("\t|%s+%s+" % (" " * len(tab_titles[0]), "-" * (width - 3 - len(tab_titles[0]))))
         # SECTION
@@ -277,15 +362,28 @@ if __name__ == "__main__":
                 line_elements = []
                 if 'elements' in lines:
                     for e in lines['elements']:
+                        show = True
+                        if 'if' in lines['elements'][e]:
+                            exec("show = %s" % (lines['elements'][e]['if'].replace(".", "line_object.")), locals())
+                            if not show:
+                                continue
                         value = lines['elements'][e].get('value', '#')
                         if value[0] == ".":
                             value = getattr(line_object, value[1:])
-                        line_elements.append(str(value))
-                line = " ".join(line_elements)
-                print("\t| | %s%s | |" % (line, " " * (width -8 - len(line))))
+                        if lines['elements'][e].get('type', '') == 'button':
+                            line_elements.append("[%s]" % (value))
+                        else:
+                            line_elements.append(str(value))
+                if line_elements:
+                    line = " ".join(line_elements)
+                    print("\t| | %s%s | |" % (line, " " * (width -8 - len(line))))
             for l in sorted(lines.keys(), key=str):
                 if isinstance(l, int):
-                    print("\t| | %s%s | |" % (l, " " * (width - 8 - len(str(l)))))
+                    for e in sorted(lines[l]['elements']):
+                        line = lines[l]['elements'][e].get('value', str(l))
+                        if lines[l]['elements'][e].get('type', '') == 'button':
+                            line = "[%s]" % (line)
+                        print("\t| | %s%s | |" % (line, " " * (width - 8 - len(str(line)))))
             print("\t| +%s+ |" % ("-" * (width - 6)))
         # TAB TAIL
         print("\t+%s+" % ("-" * (width - 2)))
