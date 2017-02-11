@@ -274,3 +274,6 @@ def ui_definitions(db, scope):
 
     # Returning the entities.
     return {'UiIndividual': Kinship_UiIndividual, 'UiKinship': UiKinship}
+
+def view_definitions():
+    return (None, None, None)

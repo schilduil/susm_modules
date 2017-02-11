@@ -117,3 +117,6 @@ if __name__ == "__main__":
         print("\t%s" % (I2._ui_orm))
         print("\t%s" % (I2.id))
         print("\t%s" % (I2.code))
+
+def view_definitions():
+    return (None, None, None)

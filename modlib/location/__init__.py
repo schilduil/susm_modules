@@ -79,3 +79,6 @@ def ui_definitions(db, scope):
     UiLocation.__module__ = 'modlib.location'
 
     return {'UiLocation': UiLocation}
+
+def view_definitions():
+    return (None, None, None)

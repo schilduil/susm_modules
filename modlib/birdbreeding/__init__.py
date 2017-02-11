@@ -7,6 +7,8 @@
 #   view_definitions()
 
 
+app_name = "susm"
+
 STATUS = {
     0: 'Dead',
     1: 'Egg',
@@ -48,13 +50,23 @@ STATUS = {
         5 < 2
         6 < 2
         10 < 2
-                             
+
     --- < 50: not yet a budgie
     --- 50-100: a sick bird.
     --- 100-150: a normal budgie
     --- 150-200:
     --- 200-250:
 """
+
+
+def requirements():
+    return ["base"]
+
+def definitions(db, scope):
+    return {}
+
+def ui_definitions(db, scope):
+    return {}
 
 def view_definitions():
 
