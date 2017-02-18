@@ -119,4 +119,42 @@ if __name__ == "__main__":
         print("\t%s" % (I2.code))
 
 def view_definitions():
-    return (None, None, None)
+    name = 'Individual'
+    flow_name = name.upper()
+    ref_name = "".join(c.lower() if c.isalnum() else "" for c in name)
+
+    # Data queries.
+    queries = {}
+    queries["%s.adults" % (ref_name)] = ("result = Individual.select(lambda adults: status > 50).order_by(desc(Individual.dob))", {})
+
+    # Views
+    views = {}
+    views["%s_ADULTS" % (flow_name)] = {
+        "name": name,
+        "tabs": {
+            0: {
+                "title": "Adults",
+                "sections": {
+                    "title": "Adults",
+                    "lines": {
+                        "query": "%s.adults" % (ref_name),
+                        "elements": {
+                            0: {
+                                'type': 'label',
+                                'value': '.sex'
+                            },
+                            1: {
+                                'type': 'button',
+                                'value': '.code',
+                                'outmessage': "INDIVIDUAL"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    flow = {}
+
+    return (queries, views, {flow_name: flow})

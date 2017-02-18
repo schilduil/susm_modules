@@ -79,7 +79,6 @@ def view_definitions():
     queries["%s.locations" % (ref_name)] = ("result = Location.select(lambda bl: bl.type == Location.BREEDING).order_by(desc(Location.parent), desc(Location.name))", {})
     queries["%s.adults_in_location" % (ref_name)] = ("result = Individual.select(lambda adults: location.id == %(location_id)s and status > 50).order_by(desc(Individual.sex))", {'location_id': None})
     queries["%s.young_in_location" % (ref_name)] = ("result = Individual.select(lambda adults: location.id == %(location_id)s and 0 < status < 50).order_by(desc(Individual.dob))", {'location_id': None})
-    # TODO: register queries.
 
     # Views
     """
@@ -246,10 +245,8 @@ def view_definitions():
             }
         }
     }
-    # TODO: register with Jeeves.
 
     flow = {}
-    # TODO: register in the flow under flow_name.
 
     return (queries, views, {flow_name: flow})
 
