@@ -75,8 +75,17 @@ def view_definitions():
     ref_name = "".join(c.lower() if c.isalnum() else "" for c in name)
 
     # Data queries.
+    def adults(scope, params):
+        """
+        Select for all the adults. Youngest first.
+        """
+        return Individual.select(lambda adults: status > 50).order_by(desc(Individual.dob))
+    
     queries = {}
-    queries["%s.adults" % (ref_name)] = ("result = Individual.select(lambda adults: status > 50).order_by(desc(Individual.dob))", {})
+    # Old string way of defining a query:
+    #queries["%s.adults" % (ref_name)] = ("result = Individual.select(lambda adults: status > 50).order_by(desc(Individual.dob))", {})
+    # New callable way of defining a query (see jandw.py / Jeeves / do_query):
+    queries["%s.adults" % (ref_name)] = (adults, {})
 
     # Views
     views = {}
