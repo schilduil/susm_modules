@@ -79,8 +79,8 @@ def view_definitions():
         """
         Select for all the adults. Youngest first.
         """
-        return Individual.select(lambda adults: status > 50).order_by(desc(Individual.dob))
-    
+        return Individual.select(lambda i: i.status > 50).order_by(desc(Individual.dob))
+
     queries = {}
     # Old string way of defining a query:
     #queries["%s.adults" % (ref_name)] = ("result = Individual.select(lambda adults: status > 50).order_by(desc(Individual.dob))", {})
@@ -95,18 +95,20 @@ def view_definitions():
             0: {
                 "title": "Adults",
                 "sections": {
-                    "title": "Adults",
-                    "lines": {
-                        "query": "%s.adults" % (ref_name),
-                        "elements": {
-                            0: {
-                                'type': 'label',
-                                'value': '.sex'
-                            },
-                            1: {
-                                'type': 'button',
-                                'value': '.code',
-                                'outmessage': "INDIVIDUAL"
+                    0: {
+                        "title": "Adults",
+                        "lines": {
+                            "query": "%s.adults" % (ref_name),
+                            "elements": {
+                                0: {
+                                    'type': 'label',
+                                    'value': '.sex'
+                                },
+                                1: {
+                                    'type': 'button',
+                                    'value': '.code',
+                                    'outmessage': "INDIVIDUAL"
+                                }
                             }
                         }
                     }
