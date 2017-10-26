@@ -107,7 +107,7 @@ def view_definitions():
                                 1: {
                                     'type': 'button',
                                     'value': '.code',
-                                    'outmessage': "INDIVIDUAL"
+                                    'outmessage': "RECORD" # Should become "INDIVIDUAL"
                                 }
                             }
                         }
