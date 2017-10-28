@@ -75,11 +75,13 @@ def view_definitions():
     ref_name = "".join(c.lower() if c.isalnum() else "" for c in name)
 
     # Data queries.
-    def adults(scope, params):
+    def adults(params):
         """
         Select for all the adults. Youngest first.
         """
-        return Individual.select(lambda i: i.status > 50).order_by(desc(Individual.dob))
+        # TODO: Use the page_limit (how many results) and page_start (where to
+        # start the page) parameters.
+        return Individual.select(lambda i: i.status > 50).order_by(desc(Individual.dob)).page(params.get('pagenum', 1), params.get('pagesize', 10))
 
     queries = {}
     # Old string way of defining a query:
