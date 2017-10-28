@@ -79,13 +79,9 @@ def view_definitions():
         """
         Select for all the adults. Youngest first.
         """
-        # TODO: Use the page_limit (how many results) and page_start (where to
-        # start the page) parameters.
-        return Individual.select(lambda i: i.status > 50).order_by(desc(Individual.dob)).page(params.get('pagenum', 1), params.get('pagesize', 10))
+        return Individual.select(lambda i: i.status > 50).order_by(desc(Individual.dob)).page(pagenum=params.get('pagenum', 1), pagesize=params.get('pagesize', 10))
 
     queries = {}
-    # Old string way of defining a query:
-    #queries["%s.adults" % (ref_name)] = ("result = Individual.select(lambda adults: status > 50).order_by(desc(Individual.dob))", {})
     # New callable way of defining a query (see jandw.py / Jeeves / do_query):
     queries["%s.adults" % (ref_name)] = (adults, {})
 
