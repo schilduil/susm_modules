@@ -59,6 +59,7 @@ def ui_definitions(db, scope):
         """
         Calculates and retrieves/saves kinships.
         """
+        _ui_class = modlib.kinship.Kinship
 
         @staticmethod
         def _calculate(first, second):

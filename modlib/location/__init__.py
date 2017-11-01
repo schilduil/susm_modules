@@ -57,6 +57,7 @@ def ui_definitions(db, scope):
         """
         Individual for the UI that links to the back.
         """
+        _ui_class = modlib.location.Location
 
         def __init__(self, parent=None, name=None, orm=None, config=None):
             """

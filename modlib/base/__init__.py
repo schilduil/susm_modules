@@ -44,6 +44,7 @@ def ui_definitions(db, scope):
         """
         Individual for the UI that links to the back.
         """
+        _ui_class = modlib.base.Individual
 
         def __init__(self, id=None, code=None, orm=None, config=None):
             """
@@ -79,7 +80,7 @@ def view_definitions():
         """
         Select for all the adults. Youngest first.
         """
-        return Individual.select(lambda i: i.status > 50).order_by(desc(Individual.dob)).page(pagenum=params.get('pagenum', 1), pagesize=params.get('pagesize', 10))
+        return Individual.select(lambda i: i.status > 50).order_by(Individual.id).page(pagenum=params.get('pagenum', 1), pagesize=params.get('pagesize', 10))
 
     queries = {}
     # New callable way of defining a query (see jandw.py / Jeeves / do_query):
