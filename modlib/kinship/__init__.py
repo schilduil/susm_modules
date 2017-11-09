@@ -73,9 +73,13 @@ def ui_definitions(db, scope):
             try:
                 if first.dob > second.dob:
                     first, second = second, first
-            except TypeError:
-                if first.id > second.id:
-                    first, second = second, first
+            except (TypeError, AttributeError):
+                try:
+                    if first.id > second.id:
+                        first, second = second, first
+                except (TypeError, AttributeError):
+                    if first > second:
+                        first, second = second, first
             # Get the parents of the youngest.
             parents = second.parents.page(1, pagesize=2)
             # If first == second, handle it.
@@ -108,9 +112,13 @@ def ui_definitions(db, scope):
             try:
                 if first.dob > second.dob:
                     first, second = second, first
-            except TypeError:
-                if first.id > second.id:
-                    first, second = second, first
+            except (TypeError, AttributeError):
+                try:
+                    if first.id > second.id:
+                        first, second = second, first
+                except (TypeError, AttributeError):
+                    if first > second:
+                        first, second = second, first
             # Get the parents of the youngest.
             parents = second.parents.page(1, pagesize=2)
             # If first == second, handle it.
@@ -157,25 +165,36 @@ def ui_definitions(db, scope):
                 try:
                     if first.dob > second.dob:
                         self._ui_switched = True
-                except TypeError:
-                    if first.id > second.id:
-                        self._ui_switched = True
+                except (TypeError, AttributeError):
+                    try:
+                        if first.id > second.id:
+                            self._ui_switched = True
+                    except (TypeError, AttributeError):
+                        if first > second:
+                            self._ui_switched = True
+                # We don't need the objects but the id
+                try:
+                    id1, id2 = first.id, second.id
+                except (TypeError, AttributeError):
+                    # Assuming it was already the id's.
+                    id1, id2 = first, second
                 # Try to find it
                 try:
-                    # Normally it should be in the database with first the oldest first.
+                    # Normally it should be in the database with the oldest first.
                     if self._ui_switched:
-                        self._ui_orm = modlib.kinship.Kinship[second.id, first.id]
+                        self._ui_orm = modlib.kinship.Kinship[id2, id1]
                     else:
-                        self._ui_orm = modlib.kinship.Kinship[first.id, second.id]
+                        self._ui_orm = modlib.kinship.Kinship[id1, id2]
                 except core.ObjectNotFound:
                     self._ui_switched = not self._ui_switched
                     try:
                         if self._ui_switched:
-                            self._ui_orm = modlib.kinship.Kinship[second, first]
+                            self._ui_orm = modlib.kinship.Kinship[id2, id1]
                         else:
-                            self._ui_orm = modlib.kinship.Kinship[first, second]
+                            self._ui_orm = modlib.kinship.Kinship[id1, id2]
                     except core.ObjectNotFound:
                         self._ui_switched = not self._ui_switched
+                        # This will not work with just id's.
                         self.calculate_and_create(first, second)
             self.ui_init()
 
