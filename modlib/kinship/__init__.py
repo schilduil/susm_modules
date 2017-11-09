@@ -208,6 +208,8 @@ def ui_definitions(db, scope):
                 self._ui_orm = modlib.kinship.Kinship(first=second, second=first, kinship=kinship, pc_kinship=pc_kinship)
             else:
                 self._ui_orm = modlib.kinship.Kinship(first=first, second=second, kinship=kinship, pc_kinship=pc_kinship)
+            # Created, now commit to the database.
+            self.commit()
 
         def recalculate(self, timestamp=None):
             """
@@ -215,7 +217,7 @@ def ui_definitions(db, scope):
 
             To be triggered from Individual if a parentage (or dob?) changes. Also
             updates all depended objects.
-            It uses the time stamp to avoid redoing firsts that already were dfirst.
+            It uses the time stamp to avoid redoing firsts that already were done.
             """
             # Initializing the time stamp if needed.
             if not timestamp:
@@ -227,6 +229,8 @@ def ui_definitions(db, scope):
             # Recalculating this.
             kinship = self._calculate(self._ui_orm.first, self._ui_orm.second)
             self._ui_orm.kinship = kinship
+            # Commiting change to the database.
+            self.commit()
             # Marking the timestamp we did the update.
             self._ui_update_timestamp = datetime.datetime.now()
             # Find all the children's kinships and update them.
